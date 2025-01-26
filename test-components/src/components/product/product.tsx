@@ -5,6 +5,7 @@ import { MenuItemsUI, sideBarMenu, transformMenuConfig } from '../../configs/men
 import { TreeViewBaseItem } from '@mui/x-tree-view';
 import SideNavigation from '../sideNavigation/sideNav';
 import { Paper } from '@mui/material';
+import TaskListProgress from '../dashboard/widgetComponent/taskProgressGraph';
 
 
 const Product = () => {
@@ -33,7 +34,7 @@ const Product = () => {
             </Paper>
         </Grid>
         <Grid size={9}>
-          Page Content here
+          <TaskListProgress apiUrl='http://www.testApi.com/myTaskList' />
         </Grid>
       </Grid>
     </Box>
