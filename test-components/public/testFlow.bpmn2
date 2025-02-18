@@ -1,0 +1,59 @@
+<bpmn2:process id="DataValidationAndParallelProcess" isExecutable="true">
+  <bpmn2:startEvent id="startEvent" name="Start"/>
+
+  <!-- Data Creation -->
+  <bpmn2:userTask id="task0" name="Create Data"/>
+
+  <!-- Data Validation -->
+  <bpmn2:userTask id="taskValidate" name="Validate Data"/>
+  <bpmn2:exclusiveGateway id="validationDecision" name="Validation Decision"/>
+
+  <!-- Validation Loops -->
+  <bpmn2:sequenceFlow id="rejectFlow" sourceRef="validationDecision" targetRef="task0" name="Reject">
+    <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">#{validationOutcome == 'reject'}</bpmn2:conditionExpression>
+  </bpmn2:sequenceFlow>
+  <bpmn2:sequenceFlow id="acceptFlow" sourceRef="validationDecision" targetRef="parallelGatewaySplit" name="Accept">
+    <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">#{validationOutcome == 'accept'}</bpmn2:conditionExpression>
+  </bpmn2:sequenceFlow>
+
+  <!-- Parallel Tasks -->
+  <bpmn2:parallelGateway id="parallelGatewaySplit" name="Split"/>
+  <bpmn2:userTask id="task1" name="Task 1"/>
+  <bpmn2:userTask id="task2" name="Task 2"/>
+  <bpmn2:parallelGateway id="parallelGatewayMerge" name="Merge"/>
+
+  <!-- Task 3 -->
+  <bpmn2:userTask id="task3" name="Task 3">
+    <bpmn2:extensionElements>
+      <drools:metaData name="task3Outcome">
+        <drools:metaValue>approve,reject</drools:metaValue>
+      </drools:metaData>
+    </bpmn2:extensionElements>
+  </bpmn2:userTask>
+
+  <!-- Rework Decision -->
+  <bpmn2:exclusiveGateway id="reworkDecision" name="Rework Decision"/>
+  <bpmn2:sequenceFlow id="reworkTask1Flow" sourceRef="reworkDecision" targetRef="task1" name="Rework Task 1">
+    <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">#{reworkTask1 == true}</bpmn2:conditionExpression>
+  </bpmn2:sequenceFlow>
+  <bpmn2:sequenceFlow id="reworkTask2Flow" sourceRef="reworkDecision" targetRef="task2" name="Rework Task 2">
+    <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">#{reworkTask2 == true}</bpmn2:conditionExpression>
+  </bpmn2:sequenceFlow>
+  <bpmn2:sequenceFlow id="approveFlow" sourceRef="reworkDecision" targetRef="endEvent" name="Approve">
+    <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">#{reworkTask1 == false && reworkTask2 == false}</bpmn2:conditionExpression>
+  </bpmn2:sequenceFlow>
+
+  <!-- End Event -->
+  <bpmn2:endEvent id="endEvent" name="Process Complete"/>
+
+  <!-- Flows -->
+  <bpmn2:sequenceFlow id="flow1" sourceRef="startEvent" targetRef="task0"/>
+  <bpmn2:sequenceFlow id="flow2" sourceRef="task0" targetRef="taskValidate"/>
+  <bpmn2:sequenceFlow id="flow3" sourceRef="taskValidate" targetRef="validationDecision"/>
+  <bpmn2:sequenceFlow id="flow4" sourceRef="parallelGatewaySplit" targetRef="task1"/>
+  <bpmn2:sequenceFlow id="flow5" sourceRef="parallelGatewaySplit" targetRef="task2"/>
+  <bpmn2:sequenceFlow id="flow6" sourceRef="task1" targetRef="parallelGatewayMerge"/>
+  <bpmn2:sequenceFlow id="flow7" sourceRef="task2" targetRef="parallelGatewayMerge"/>
+  <bpmn2:sequenceFlow id="flow8" sourceRef="parallelGatewayMerge" targetRef="task3"/>
+  <bpmn2:sequenceFlow id="flow9" sourceRef="task3" targetRef="reworkDecision"/>
+</bpmn2:process>
